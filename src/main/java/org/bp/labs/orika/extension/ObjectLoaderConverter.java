@@ -18,11 +18,11 @@ public class ObjectLoaderConverter<SO, S, E, D> extends CustomConverter<S, D> {
 
     private Function<SO, Collection<S>> idListGetterForSource;
     private Function<SO, S> idGetterForSource;
-    private Function<Iterable<S>, Iterable<E>> loadObjectsFunction;
+    private Function<? super Collection<S>, ? extends Iterable<E>> loadObjectsFunction;
     private Function<E, S> idGetterFromRelObject;
     private String contextPropertyName;
 
-    private ObjectLoaderConverter(Function<SO, Collection<S>> idListGetterForSource, Function<SO, S> idGetterForSource, Function<Iterable<S>, Iterable<E>> loadObjectsFunction, Function<E, S> idGetterFromRelObject) {
+    private ObjectLoaderConverter(Function<SO, Collection<S>> idListGetterForSource, Function<SO, S> idGetterForSource, Function<? super Collection<S>, ? extends Iterable<E>> loadObjectsFunction, Function<E, S> idGetterFromRelObject) {
         this.idListGetterForSource = idListGetterForSource;
         this.idGetterForSource = idGetterForSource;
         this.loadObjectsFunction = loadObjectsFunction;
@@ -30,11 +30,11 @@ public class ObjectLoaderConverter<SO, S, E, D> extends CustomConverter<S, D> {
         this.contextPropertyName = "rel_objects_" + this.getClass().getSimpleName() + "_" + CONVERTER_ID_RANDOM.nextLong();
     }
 
-    public static <SO, S, E, D> ObjectLoaderConverter<SO, S, E, D> forSingleIdProp(Function<SO, S> idGetterForSource, Function<Iterable<S>, Iterable<E>> loadObjectsFunction, Function<E, S> idGetterFromRelObject) {
+    public static <SO, S, E, D> ObjectLoaderConverter<SO, S, E, D> forSingleIdProp(Function<SO, S> idGetterForSource, Function<? super Collection<S>, ? extends Iterable<E>> loadObjectsFunction, Function<E, S> idGetterFromRelObject) {
         return new ObjectLoaderConverter<>(null, idGetterForSource, loadObjectsFunction, idGetterFromRelObject);
     }
 
-    public static <SO, S, E, D> ObjectLoaderConverter<SO, S, E, D> forMultipleIdProp(Function<SO, Collection<S>> idListGetterForSource, Function<Iterable<S>, Iterable<E>> loadObjectsFunction, Function<E, S> idGetterFromRelObject) {
+    public static <SO, S, E, D> ObjectLoaderConverter<SO, S, E, D> forMultipleIdProp(Function<SO, Collection<S>> idListGetterForSource, Function<? super Iterable<S>, ? extends Iterable<E>> loadObjectsFunction, Function<E, S> idGetterFromRelObject) {
         return new ObjectLoaderConverter<>(idListGetterForSource, null, loadObjectsFunction, idGetterFromRelObject);
     }
 
@@ -77,7 +77,7 @@ public class ObjectLoaderConverter<SO, S, E, D> extends CustomConverter<S, D> {
      */
     private D mapForSingleObject(S source, Type<? extends D> destinationType) {
         if (source instanceof Collection) {
-            Iterable<E> relatedObjects = loadObjectsFunction.apply((Iterable<S>) source);
+            Iterable<E> relatedObjects = loadObjectsFunction.apply((Collection<S>) source);
             return (D) StreamSupport.stream(relatedObjects.spliterator(), false)
                     .map(it -> mapperFacade.map(it, destinationType.getComponentType().getRawType()))
                     .collect(getCollectorForDestinationType(destinationType));

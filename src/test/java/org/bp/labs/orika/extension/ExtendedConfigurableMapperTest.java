@@ -1,7 +1,5 @@
 package org.bp.labs.orika.extension;
 
-import org.assertj.core.api.Assertions;
-import org.assertj.core.groups.Tuple;
 import org.bp.labs.orika.extension.impl.TestMapper;
 import org.bp.labs.orika.extension.impl.TestObjectLoader;
 import org.bp.labs.orika.extension.impl.dto.HashTagDTO;
